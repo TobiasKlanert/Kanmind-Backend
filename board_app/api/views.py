@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, mixins
 from .serializers import BoardSerializer, BoardDetailSerializer
 from .permissions import IsOwnerOrMember
 from ..models import Board
@@ -15,7 +15,10 @@ class BoardListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save()
 
-class BoardDetailView(generics.RetrieveAPIView):
+class BoardDetailView(generics.RetrieveAPIView, mixins.DestroyModelMixin):
     queryset = Board.objects.all()
     serializer_class = BoardDetailSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrMember]
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
