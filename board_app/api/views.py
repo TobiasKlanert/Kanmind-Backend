@@ -1,5 +1,6 @@
 from rest_framework import generics, permissions
 from .serializers import BoardSerializer, BoardDetailSerializer
+from .permissions import IsOwnerOrMember
 from ..models import Board
 
 
@@ -17,4 +18,4 @@ class BoardListCreateView(generics.ListCreateAPIView):
 class BoardDetailView(generics.RetrieveAPIView):
     queryset = Board.objects.all()
     serializer_class = BoardDetailSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrMember]
