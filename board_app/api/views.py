@@ -1,5 +1,5 @@
 from rest_framework import generics, permissions
-from .serializers import BoardSerializer
+from .serializers import BoardSerializer, BoardDetailSerializer
 from ..models import Board
 
 
@@ -13,3 +13,8 @@ class BoardListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save()
+
+class BoardDetailView(generics.RetrieveAPIView):
+    queryset = Board.objects.all()
+    serializer_class = BoardDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]

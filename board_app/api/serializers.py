@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from ..models import Board
 from auth_app.models import User
+from tasks_app.models import Task
 
 
 class BoardSerializer(serializers.ModelSerializer):
@@ -51,3 +52,49 @@ class BoardSerializer(serializers.ModelSerializer):
         if hasattr(obj, "tasks"):
             return obj.tasks.filter(priority="HIGH").count()
         return 0
+
+
+class UserInlineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "email", "fullname"]
+
+
+class TaskInlineSerializer(serializers.ModelSerializer):
+    assignee = UserInlineSerializer(read_only=True)
+    reviewer = UserInlineSerializer(read_only=True)
+    comments_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Task
+        fields = [
+            "id",
+            "title",
+            "description",
+            "status",
+            "priority",
+            "assignee",
+            "reviewer",
+            "due_date",
+            "comments_count",
+        ]
+
+    def get_comments_count(self, obj):
+        # falls dein Task ein related_name wie 'comments' hat:
+        return getattr(obj, "comments", []).count() if hasattr(obj, "comments") else 0
+
+
+class BoardDetailSerializer(serializers.ModelSerializer):
+    owner_id = serializers.IntegerField(source="owner.id", read_only=True)
+    members = UserInlineSerializer(many=True, read_only=True)
+    tasks = TaskInlineSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Board
+        fields = [
+            "id",
+            "title",
+            "owner_id",
+            "members",
+            "tasks",
+        ]
