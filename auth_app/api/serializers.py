@@ -27,7 +27,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Email already exists')
 
         account = User(
-            email=self.validated_data['email'], username=self.validated_data['fullname'])
+            email=self.validated_data['email'], username=self.validated_data['fullname'], fullname=self.validated_data['fullname'])
         account.set_password(pw)
         account.save()
         return account
