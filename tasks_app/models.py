@@ -7,14 +7,15 @@ User = settings.AUTH_USER_MODEL
 
 class Task(models.Model):
     class Status(models.TextChoices):
-        TODO = "todo", "To Do"
-        IN_PROGRESS = "in_progress", "In Progress"
-        DONE = "done", "Done"
+        TODO = "to-do"
+        IN_PROGRESS = "in-progress"
+        REVIEW = "review"
+        DONE = "done"
 
     class Priority(models.TextChoices):
-        LOW = "low", "Low"
-        MEDIUM = "medium", "Medium"
-        HIGH = "high", "High"
+        LOW = "low"
+        MEDIUM = "medium"
+        HIGH = "high"
 
     board = models.ForeignKey(
         Board,
