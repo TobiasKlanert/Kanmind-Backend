@@ -19,19 +19,3 @@ class Board(models.Model):
 
     def __str__(self):
         return self.title
-
-    @property
-    def member_count(self):
-        return self.members.count()
-
-    @property
-    def ticket_count(self):
-        return self.tasks.count()
-
-    @property
-    def tasks_to_do_count(self):
-        return self.tasks.filter(status="todo").count()
-
-    @property
-    def tasks_high_prio_count(self):
-        return self.tasks.filter(priority="high").count()

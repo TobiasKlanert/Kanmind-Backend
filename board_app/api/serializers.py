@@ -80,7 +80,6 @@ class TaskInlineSerializer(serializers.ModelSerializer):
         ]
 
     def get_comments_count(self, obj):
-        # falls dein Task ein related_name wie 'comments' hat:
         return getattr(obj, "comments", []).count() if hasattr(obj, "comments") else 0
 
 
