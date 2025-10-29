@@ -1,6 +1,7 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, mixins
 from rest_framework.generics import get_object_or_404
 from .serializers import TaskSerializer
+from .permissions import IsReviewerOrBoardOwner
 from ..models import Task
 from board_app.models import Board
 
@@ -28,3 +29,12 @@ class ReviewingTaskListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return (Task.objects.filter(reviewer=user))
+    
+class TaskDetailView(generics.DestroyAPIView, mixins.DestroyModelMixin):
+    serializer_class = TaskSerializer
+    permission_classes = [permissions.IsAuthenticated, IsReviewerOrBoardOwner]
+    queryset = Task.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+    
