@@ -1,10 +1,11 @@
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 
 from .serializers import RegistrationSerializer, EmailAuthTokenSerializer
+from ..models import User
 
 
 class RegistrationView(APIView):
@@ -46,3 +47,27 @@ class CustomLoginView(APIView):
             'user_id': user.id
         }
         return Response(data)
+
+class EmailCheckView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        email = request.query_params.get('email')
+        if not email:
+            return Response({'email': ['This query parameter is required.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            email = serializers.EmailField().to_internal_value(email)
+        except serializers.ValidationError as e:
+            return Response({'email': e.detail}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(email__iexact=email).first()
+        if not user:
+            return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        data = {
+            'id': user.id,
+            'email': user.email,
+            'fullname': user.fullname,
+        }
+        return Response(data, status=status.HTTP_200_OK)
