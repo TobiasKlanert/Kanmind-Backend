@@ -54,6 +54,13 @@ class TaskCommentView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated, IsBoardMemberOfTask]
     serializer_class = TaskCommentCreateSerializer
 
+    def get(self, request, pk):
+        task = get_object_or_404(Task, pk=pk)
+        self.check_object_permissions(request, task)
+        comments = TaskComment.objects.filter(task=task).order_by("created_at")
+        data = TaskCommentResponseSerializer(comments, many=True).data
+        return Response(data, status=status.HTTP_200_OK)
+
     def post(self, request, pk):
         task = get_object_or_404(Task, pk=pk)
         self.check_object_permissions(request, task)
