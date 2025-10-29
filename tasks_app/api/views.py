@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, mixins
 from rest_framework.generics import get_object_or_404
 from .serializers import TaskSerializer
-from .permissions import IsReviewerOrBoardOwner
+from .permissions import IsBoardMemberForUpdateOrReviewerOrOwnerForDelete
 from ..models import Task
 from board_app.models import Board
 
@@ -30,11 +30,14 @@ class ReviewingTaskListView(generics.ListAPIView):
         user = self.request.user
         return (Task.objects.filter(reviewer=user))
     
-class TaskDetailView(generics.DestroyAPIView, mixins.DestroyModelMixin):
+class TaskDetailView(mixins.UpdateModelMixin, generics.DestroyAPIView, mixins.DestroyModelMixin):
     serializer_class = TaskSerializer
-    permission_classes = [permissions.IsAuthenticated, IsReviewerOrBoardOwner]
+    permission_classes = [permissions.IsAuthenticated, IsBoardMemberForUpdateOrReviewerOrOwnerForDelete]
     queryset = Task.objects.all()
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
     

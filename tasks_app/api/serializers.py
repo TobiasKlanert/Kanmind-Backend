@@ -53,6 +53,20 @@ class TaskSerializer(serializers.ModelSerializer):
 
         return self._create_task(validated_data, assignee, reviewer)
 
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        board = getattr(instance, "board", None)
+        assignee_id, reviewer_id = self._pop_user_ids(validated_data)
+        self._check_user_membership(user, board)
+        self._maybe_assign_user(
+            instance, board, assignee_id, "assignee_id", "assignee")
+        self._maybe_assign_user(
+            instance, board, reviewer_id, "reviewer_id", "reviewer")
+        self._update_simple_fields(instance, validated_data)
+        instance.save()
+        return instance
+
     def _check_user_membership(self, user, board):
         if user is None or not (
             user == board.owner or board.members.filter(pk=user.pk).exists()
@@ -79,3 +93,29 @@ class TaskSerializer(serializers.ModelSerializer):
             reviewer=reviewer,
             **validated_data,
         )
+
+    def _pop_user_ids(self, data):
+        return (
+            data.pop("assignee_id", serializers.empty),
+            data.pop("reviewer_id", serializers.empty),
+        )
+
+    def _maybe_assign_user(self, instance, board, user_id, field_name, attr_name):
+        if user_id is serializers.empty:
+            return
+        user = self._get_valid_user(user_id, board, field_name)
+        setattr(instance, attr_name, user)
+
+    def _update_simple_fields(self, instance, validated_data):
+        fields = ["title", "description", "status", "priority", "due_date"]
+        for field in fields:
+            if field in validated_data:
+                setattr(instance, field, validated_data[field])
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if request and request.method == "PATCH":
+            data.pop("board", None)
+            data.pop("comments_count", None)
+        return data
