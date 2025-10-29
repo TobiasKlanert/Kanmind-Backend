@@ -1,5 +1,12 @@
 from django.urls import path
-from .views import CreateTaskView, AssignedTaskListView, ReviewingTaskListView, TaskDetailView, TaskCommentView
+from .views import (
+    CreateTaskView,
+    AssignedTaskListView,
+    ReviewingTaskListView,
+    TaskDetailView,
+    TaskCommentView,
+    TaskCommentDetailView,
+)
 
 urlpatterns = [
     path('', CreateTaskView.as_view(), name='create-task'),
@@ -7,5 +14,5 @@ urlpatterns = [
     path('reviewing/', ReviewingTaskListView.as_view(), name='reviewing-tasks'),
     path('<int:pk>/', TaskDetailView.as_view(), name='task-detail'),
     path('<int:pk>/comments/', TaskCommentView.as_view(), name='task-comments'),
-    #path('<int:pk>/comments/<int:pk>')
+    path('<int:pk>/comments/<int:comment_pk>/', TaskCommentDetailView.as_view(), name='task-comment-detail'),
 ]

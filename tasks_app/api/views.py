@@ -4,7 +4,11 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from .serializers import TaskSerializer, TaskCommentCreateSerializer, TaskCommentResponseSerializer
-from .permissions import IsBoardMemberForUpdateOrReviewerOrOwnerForDelete, IsBoardMemberOfTask
+from .permissions import (
+    IsBoardMemberForUpdateOrReviewerOrOwnerForDelete,
+    IsBoardMemberOfTask,
+    IsAuthorOfTaskComment,
+)
 from ..models import Task, TaskComment
 from board_app.models import Board
 
@@ -79,3 +83,20 @@ class TaskCommentView(generics.GenericAPIView):
 
         response_data = TaskCommentResponseSerializer(comment).data
         return Response(response_data, status=status.HTTP_201_CREATED)
+
+
+class TaskCommentDetailView(generics.DestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsAuthorOfTaskComment]
+    queryset = TaskComment.objects.all()
+    lookup_url_kwarg = "comment_pk"
+
+    def get_object(self):
+        task = get_object_or_404(Task, pk=self.kwargs.get("pk"))
+        comment = get_object_or_404(TaskComment, pk=self.kwargs.get("comment_pk"), task=task)
+        self.check_object_permissions(self.request, comment)
+        return comment
+
+    def perform_destroy(self, instance):
+        task_id = instance.task_id
+        instance.delete()
+        Task.objects.filter(pk=task_id).update(comments_count=F("comments_count") - 1)
