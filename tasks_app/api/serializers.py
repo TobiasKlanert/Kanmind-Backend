@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, NotFound
-from ..models import Task
+from ..models import Task, TaskComment
 from board_app.models import Board
 from auth_app.models import User
 
@@ -119,3 +119,23 @@ class TaskSerializer(serializers.ModelSerializer):
             data.pop("board", None)
             data.pop("comments_count", None)
         return data
+
+
+class TaskCommentCreateSerializer(serializers.Serializer):
+    content = serializers.CharField()
+
+
+class TaskCommentResponseSerializer(serializers.ModelSerializer):
+    author = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TaskComment
+        fields = [
+            "id",
+            "created_at",
+            "author",
+            "content",
+        ]
+
+    def get_author(self, obj):
+        return getattr(obj.author, "fullname", None) or getattr(obj.author, "username", "")
