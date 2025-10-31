@@ -1,8 +1,8 @@
-Kanmind Backend (Django + DRF)
+# Kanmind Backend (Django + DRF)
 
 Kanmind is a lightweight Kanban backend built with Django and Django REST Framework. It provides authentication via email + token, boards with members, tasks with status/priority, and task comments. This README explains setup, configuration, and the available API endpoints so you can run it locally or prepare it for production.
 
-Features
+## Features
 
 - Authentication with email + password, DRF Token auth
 - Custom `User` model (`auth_app.User`) with `fullname`
@@ -11,55 +11,55 @@ Features
 - Task comments and comment counters
 - CORS support for a frontend (defaults to `http://127.0.0.1:5500`)
 
-Tech Stack
+## Tech Stack
 
 - Python, Django 5, Django REST Framework
 - SQLite by default (easy local dev)
 - Token Authentication (`rest_framework.authtoken`)
 
-Requirements
+## Requirements
 
 - Python 3.10+ (3.11 recommended)
 - pip / venv
 
-Getting Started (Local)
+## Getting Started (Local)
 
-1) Clone and enter the project directory
+### 1) Clone and enter the project directory
 
 ```
 git clone https://github.com/TobiasKlanert/Kanmind-Backend.git
 cd Kanmind-Backend
 ```
 
-2) Create and activate a virtual environment
+### 2) Create and activate a virtual environment
 
 ```
-python -m venv .venv
+python -m venv env
 # Windows
-.\.venv\Scripts\activate
+.\env\Scripts\activate
 # macOS/Linux
-source .venv/bin/activate
+source env/bin/activate
 ```
 
-3) Install dependencies
+### 3) Install dependencies
 
 ```
 pip install -r requirements.txt
 ```
 
-4) Apply database migrations
+### 4) Apply database migrations
 
 ```
 python manage.py migrate
 ```
 
-5) (Optional) Create an admin user to access `/admin/`
+### 5) (Optional) Create an admin user to access `/admin/`
 
 ```
 python manage.py createsuperuser
 ```
 
-6) Run the development server
+### 6) Run the development server
 
 ```
 python manage.py runserver
@@ -67,7 +67,7 @@ python manage.py runserver
 
 The API will be available at `http://127.0.0.1:8000/`.
 
-Configuration
+## Configuration
 
 All settings live in `core/settings.py`.
 
@@ -80,7 +80,7 @@ All settings live in `core/settings.py`.
 
 Note: The project does not currently read a `.env` file. If you want environment‑based config, integrate a package like `django-environ` and update `core/settings.py` accordingly.
 
-Authentication Overview
+## Authentication Overview
 
 - Uses DRF Token Authentication. After registering or logging in, include the token in requests:
 
@@ -88,14 +88,14 @@ Authentication Overview
 Authorization: Token <your_token_here>
 ```
 
-API Endpoints
+## API Endpoints
 
 Base paths are defined in `core/urls.py`.
 
-- Admin
+### - Admin
   - `GET /admin/` – Django admin site
 
-- Auth (`auth_app.api.urls`)
+### - Auth (`auth_app.api.urls`)
   - `POST /api/registration/` – Register a new user
     - Body: `{ "fullname": str, "email": str, "password": str, "repeated_password": str }`
     - Response: `{ token, fullname, email, user_id }`
@@ -104,7 +104,7 @@ Base paths are defined in `core/urls.py`.
     - Response: `{ token, fullname, email, user_id }`
   - `GET /api/email-check/?email=<email>` – Check if a user exists (requires auth)
 
-- Boards (`board_app.api.urls`)
+### - Boards (`board_app.api.urls`)
   - `GET /api/boards/` – List boards where you are owner or member (auth required)
   - `POST /api/boards/` – Create a board (auth required)
     - Body: `{ "title": str, "members": [user_id, ...] }`
@@ -113,7 +113,7 @@ Base paths are defined in `core/urls.py`.
     - Body examples: `{ "title": "New" }` or `{ "members": [1,2,3] }`
   - `DELETE /api/boards/<id>/` – Delete a board
 
-- Tasks (`tasks_app.api.urls`)
+### - Tasks (`tasks_app.api.urls`)
   - `POST /api/tasks/` – Create task on a board (auth required)
     - Body: `{ "board": board_id, "title": str, "description": str?, "status": "to-do|in-progress|review|done", "priority": "low|medium|high", "assignee_id": user_id?, "reviewer_id": user_id?, "due_date": "YYYY-MM-DD"? }`
   - `GET /api/tasks/assigned-to-me/` – List tasks where you are assignee
@@ -125,9 +125,9 @@ Base paths are defined in `core/urls.py`.
     - Body: `{ "content": str }`
   - `DELETE /api/tasks/<id>/comments/<comment_id>/` – Delete a comment (author only)
 
-Example Requests
+## Example Requests
 
-Register:
+### Register:
 
 ```
 curl -X POST http://127.0.0.1:8000/api/registration/ \
@@ -140,7 +140,7 @@ curl -X POST http://127.0.0.1:8000/api/registration/ \
   }'
 ```
 
-Login:
+### Login:
 
 ```
 curl -X POST http://127.0.0.1:8000/api/login/ \
@@ -148,7 +148,7 @@ curl -X POST http://127.0.0.1:8000/api/login/ \
   -d '{"email": "ada@example.com", "password": "secret123"}'
 ```
 
-Create a board:
+### Create a board:
 
 ```
 curl -X POST http://127.0.0.1:8000/api/boards/ \
@@ -157,7 +157,7 @@ curl -X POST http://127.0.0.1:8000/api/boards/ \
   -d '{"title": "Engineering", "members": [2,3]}'
 ```
 
-Create a task:
+### Create a task:
 
 ```
 curl -X POST http://127.0.0.1:8000/api/tasks/ \
@@ -172,7 +172,7 @@ curl -X POST http://127.0.0.1:8000/api/tasks/ \
   }'
 ```
 
-Add a comment:
+### Add a comment:
 
 ```
 curl -X POST http://127.0.0.1:8000/api/tasks/42/comments/ \
@@ -181,7 +181,7 @@ curl -X POST http://127.0.0.1:8000/api/tasks/42/comments/ \
   -d '{"content": "Looks good to me."}'
 ```
 
-Project Structure
+## Project Structure
 
 ```
 core/                # Django project (settings, URLs, WSGI/ASGI)
@@ -192,17 +192,11 @@ manage.py            # Django management CLI
 requirements.txt     # Python dependencies
 ```
 
-Running Tests
-
-```
-python manage.py test
-```
-
-CORS
+## CORS
 
 `CORS_ALLOWED_ORIGINS` allows `http://127.0.0.1:5500` by default (useful for a local frontend served via Live Server). Add your frontend origin(s) in `core/settings.py`.
 
-Production Notes
+## Production Notes
 
 - Set `DEBUG = False` and configure `ALLOWED_HOSTS`.
 - Generate a secure `SECRET_KEY` and do not commit it.
@@ -211,6 +205,6 @@ Production Notes
 - Rotate/authenticate tokens and consider using JWT if preferred.
 - Review and tighten CORS settings.
 
-License
+## License
 
 This project does not include a license file. If you plan to open source it, add a LICENSE to clarify usage rights.
