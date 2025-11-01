@@ -72,13 +72,13 @@ class BoardSerializer(serializers.ModelSerializer):
     def get_tasks_to_do_count(self, obj):
         """Count of tasks with 'TODO' status."""
         if hasattr(obj, "tasks"):
-            return obj.tasks.filter(status="TODO").count()
+            return obj.tasks.filter(status="to-do").count()
         return 0
 
     def get_tasks_high_prio_count(self, obj):
         """Count of tasks with 'HIGH' priority."""
         if hasattr(obj, "tasks"):
-            return obj.tasks.filter(priority="HIGH").count()
+            return obj.tasks.filter(priority="high").count()
         return 0
 
 
