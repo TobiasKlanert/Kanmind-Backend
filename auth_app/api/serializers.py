@@ -53,11 +53,14 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         # Ensure the two password entries match
         if pw != repeated_pw:
-            raise serializers.ValidationError({'error': 'passwords dont match'})
+            raise serializers.ValidationError(
+                {'error': 'passwords dont match'})
 
         # Ensure email uniqueness
         if User.objects.filter(email=self.validated_data['email']).exists():
-            raise serializers.ValidationError('Email already exists')
+            raise serializers.ValidationError({
+                "email": "Email already exists"
+            })
 
         # Create new user; use fullname as username field here
         account = User(
@@ -104,11 +107,14 @@ class EmailAuthTokenSerializer(serializers.Serializer):
         # Both fields required
         if email and password:
             # authenticate need a custom backend that accepts 'email' (./backends.py)
-            user = authenticate(request=self.context.get('request'), email=email, password=password)
+            user = authenticate(request=self.context.get(
+                'request'), email=email, password=password)
             if not user:
-                raise serializers.ValidationError("Unable to log in with provided credentials.")
+                raise serializers.ValidationError(
+                    "Unable to log in with provided credentials.")
         else:
-            raise serializers.ValidationError("Must include 'email' and 'password'.")
+            raise serializers.ValidationError(
+                "Must include 'email' and 'password'.")
 
         # Attach the authenticated user for use by the view
         attrs['user'] = user
